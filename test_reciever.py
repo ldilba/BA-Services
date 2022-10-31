@@ -3,13 +3,22 @@ import json
 import pika
 import requests
 
+session = ""
+
 
 def callback(ch, method, properties, body: bytes):
     received = json.loads(body.decode('utf-8'))
-
+    global session
     print(received)
-    requests.post("http://localhost:80/receive",
-                  json={"uid": received["uid"], "service": received["service"], "message": "Hier ist die Response :)"})
+    cookies = {}
+    if session != "":
+        cookies['session'] = session
+
+    r = requests.post("http://localhost:80/receive", cookies=cookies,
+                      json={"uid": received["uid"], "service": received["service"],
+                            "message": "Why you should never center a div."})
+
+    session = r.cookies['session']
 
 
 if __name__ == '__main__':
