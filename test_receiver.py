@@ -2,27 +2,24 @@ import json
 
 import pika
 import requests
-
-session = ""
+import os
 
 
 def callback(ch, method, properties, body: bytes):
     received = json.loads(body.decode('utf-8'))
-    global session
     print(received)
     cookies = {}
-    if session != "":
-        cookies['session'] = session
 
-    r = requests.post("http://localhost:80/receive", cookies=cookies,
+    url = os.environ.get('FLASK_URL')
+    r = requests.post(url + "/receive", cookies=cookies,
                       json={"uid": received["uid"], "service": received["service"],
                             "message": "Why you should never center a div."})
 
-    session = r.cookies['session']
-
 
 if __name__ == '__main__':
-    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    credentials = pika.PlainCredentials('guest', 'guest')
+    rabbit_host = os.environ.get('RABBIT_HOST')
+    connection = pika.BlockingConnection(pika.ConnectionParameters(rabbit_host, 5672, '/', credentials))
     channel = connection.channel()
 
     channel.queue_declare(queue='text-similarity')
