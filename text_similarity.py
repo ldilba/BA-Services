@@ -17,8 +17,9 @@ def respond(uid, service, query, params):
     channel.queue_declare(queue='response-text-similarity')
     search_size = 1
     for p in params:
-        if "search_size" in p:
-            search_size = p["search_size"]
+        if "search_size" in p.values():
+            search_size = p["value"]
+
     message = handle_query(query, search_size)
 
     channel.basic_publish(exchange='',
