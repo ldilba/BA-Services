@@ -26,6 +26,7 @@ def respond(uid, service, query, params):
                           routing_key='response-text-similarity',
                           body=f'{{"uid": "{uid}", "service": "{service}", "message": {json.dumps(message)}}}'.encode(
                               'utf-8'))
+    print(f'Send: {{"uid": "{uid}", "service": "{service}", "message": {json.dumps(message)}}}')
     channel.close()
     connection.close()
 
@@ -150,7 +151,9 @@ if __name__ == '__main__':
     session.run(tf.compat.v1.tables_initializer())
     print("Done.")
 
-    client = Elasticsearch("http://localhost:9200")
+    elasticsearch_url = os.environ.get('ELASTIC_URL')
+    print("Connecting to " + elasticsearch_url)
+    client = Elasticsearch(elasticsearch_url)
 
     index_data()
 
